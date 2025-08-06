@@ -1,0 +1,224 @@
+<div class="repository-list">
+  <div class="container">
+    <!-- Controls Section -->
+    <div class="controls">
+      <div class="search-bar">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M19 19L13 13M15 8A7 7 0 1 1 1 8A7 7 0 0 1 15 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <input 
+          type="text" 
+          placeholder="Search repositories..." 
+          [value]="searchTerm"
+          (input)="onSearchChange($any($event.target).value)"
+          class="search-input">
+      </div>
+      
+      <div class="controls-right">
+        <div class="filter-tabs">
+          <button 
+            class="filter-tab" 
+            [class.active]="visibilityFilter === 'all'"
+            (click)="onVisibilityFilterChange('all')">
+            All
+          </button>
+          <button 
+            class="filter-tab" 
+            [class.active]="visibilityFilter === 'public'"
+            (click)="onVisibilityFilterChange('public')">
+            Public
+          </button>
+          <button 
+            class="filter-tab" 
+            [class.active]="visibilityFilter === 'private'"
+            (click)="onVisibilityFilterChange('private')">
+            Private
+          </button>
+        </div>
+
+        <button 
+          class="btn btn-sm btn-ghost refresh-btn"
+          [disabled]="loading"
+          (click)="forceRefresh()"
+          title="Refresh repositories and clear cache">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M1.5 8a6.5 6.5 0 1 1 6.5 6.5M8 1.5v3M10.5 3L8 5.5 5.5 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="loading">
+      <div class="loading"></div>
+      <span>Loading repositories...</span>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-container" *ngIf="successMessage && !loading">
+      <div class="success-message">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="success-icon">
+          <circle cx="10" cy="10" r="9" fill="var(--color-success)"/>
+          <path d="m6 10 2 2 4-4" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        {{ successMessage }}
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-container" *ngIf="error && !loading">
+      <div class="error-message">{{ error }}</div>
+      <button class="btn btn-primary" (click)="loadRepositories()">Try Again</button>
+    </div>
+
+    <!-- Repository Table -->
+    <div class="table-container" *ngIf="!loading && !error">
+      <!-- Table Info -->
+      <div class="table-info" *ngIf="filteredRepositories.length > 0">
+        <span>Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredRepositories.length) }} of {{ filteredRepositories.length }} repositories</span>
+      </div>
+      <table class="repository-table">
+        <thead>
+          <tr>
+            <th class="sortable" (click)="onSort('name')">
+              Repository
+              <span class="sort-icon">{{ getSortIcon('name') }}</span>
+            </th>
+            <th class="sortable" (click)="onSort('isPrivate')">
+              Visibility
+              <span class="sort-icon">{{ getSortIcon('isPrivate') }}</span>
+            </th>
+            <th class="sortable" (click)="onSort('language')">
+              Language
+              <span class="sort-icon">{{ getSortIcon('language') }}</span>
+            </th>
+            <th class="sortable" (click)="onSort('createdAt')">
+              Created
+              <span class="sort-icon">{{ getSortIcon('createdAt') }}</span>
+            </th>
+            <th class="sortable" (click)="onSort('updatedAt')">
+              Updated
+              <span class="sort-icon">{{ getSortIcon('updatedAt') }}</span>
+            </th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let repo of paginatedRepositories" class="repo-row">
+            <td class="repo-name-cell">
+              <div class="repo-name">
+                <a [href]="repo.htmlUrl" target="_blank" class="repo-link">
+                  {{ repo.name }}
+                </a>
+                <div class="repo-description" *ngIf="repo.description">
+                  {{ repo.description }}
+                </div>
+              </div>
+            </td>
+            
+            <td>
+              <span class="badge" [class]="repo.isPrivate ? 'badge-private' : 'badge-public'">
+                {{ repo.isPrivate ? 'Private' : 'Public' }}
+              </span>
+            </td>
+            
+            <td class="language-cell">
+              <span class="language" *ngIf="repo.language">{{ repo.language }}</span>
+              <span class="no-language" *ngIf="!repo.language">—</span>
+            </td>
+            
+            <td class="date-cell">
+              {{ formatDate(repo.createdAt) }}
+            </td>
+            
+            <td class="date-cell">
+              {{ formatDate(repo.updatedAt) }}
+            </td>
+            
+            <td class="actions-cell">
+              <button 
+                class="btn btn-sm btn-ghost"
+                [disabled]="isUpdating(repo.id)"
+                (click)="toggleRepositoryVisibility(repo)">
+                <ng-container *ngIf="!isUpdating(repo.id)">
+                  Make {{ repo.isPrivate ? 'Public' : 'Private' }}
+                </ng-container>
+                <ng-container *ngIf="isUpdating(repo.id)">
+                  <div class="updating-text">
+                    <div class="loading-small"></div>
+                    Updating...
+                  </div>
+                </ng-container>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="paginatedRepositories.length === 0">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" class="empty-icon">
+          <circle cx="32" cy="32" r="30" stroke="var(--color-border)" stroke-width="2" stroke-dasharray="4 4"/>
+          <path d="M32 16C24.268 16 18 22.268 18 30C18 35.072 20.576 39.088 24.944 41.168C25.744 41.296 26.032 40.816 26.032 40.4C26.032 40.016 26.032 39.088 26.032 37.872C23.872 38.832 22.912 36.824 22.912 36.824C22.176 34.968 21.12 34.488 21.12 34.488C19.68 33.528 21.216 33.56 21.216 33.56C22.816 33.656 23.648 35.192 23.648 35.192C25.056 37.624 27.328 36.888 26.064 36.472C26.224 35.448 26.64 34.744 27.088 34.328C25.44 33.912 21.6 32.536 21.6 26.424C21.6 24.696 22.24 23.288 23.68 22.168C23.52 21.752 22.976 20.152 23.84 18.008C23.84 18.008 25.184 17.56 26 19.608C27.312 19.256 28.656 19.096 30 19.096C31.344 19.096 32.72 19.256 34 19.608C34.816 17.56 36.16 18.008 36.16 18.008C37.024 20.152 36.48 21.752 36.32 22.168C37.76 23.288 38.4 24.696 38.4 26.424C38.4 32.536 34.56 33.896 32.88 34.312C33.456 34.808 33.968 35.8 33.968 37.336C33.968 39.512 33.968 41.272 33.968 41.4C33.968 41.816 34.256 42.296 35.056 42.168C39.424 40.088 42 36.072 42 30C42 22.268 35.732 16 32 16Z" fill="#000000"/>
+        </svg>
+        <h3>No repositories found</h3>
+        <p>Try adjusting your search term or filter settings.</p>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="filteredRepositories.length > 0">
+        <div class="pagination-info">
+          <span>Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredRepositories.length) }} of {{ filteredRepositories.length }} repositories</span>
+        </div>
+
+        <div class="pagination-controls">
+          <div class="page-size-selector">
+            <label>Items per page:</label>
+            <select [value]="pageSize" (change)="onPageSizeChange(+$any($event.target).value)" class="page-size-select">
+              <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+            </select>
+          </div>
+
+          <div class="pagination-buttons" *ngIf="totalPages > 1">
+            <button 
+              class="btn btn-sm btn-ghost"
+              [disabled]="currentPage === 1"
+              (click)="onPageChange(1)">
+              First
+            </button>
+            
+            <button 
+              class="btn btn-sm btn-ghost"
+              [disabled]="currentPage === 1"
+              (click)="onPageChange(currentPage - 1)">
+              Previous
+            </button>
+
+            <button 
+              *ngFor="let page of getPageNumbers()"
+              class="btn btn-sm"
+              [class]="currentPage === page ? 'btn-primary' : 'btn-ghost'"
+              (click)="onPageChange(page)">
+              {{ page }}
+            </button>
+
+            <button 
+              class="btn btn-sm btn-ghost"
+              [disabled]="currentPage === totalPages"
+              (click)="onPageChange(currentPage + 1)">
+              Next
+            </button>
+            
+            <button 
+              class="btn btn-sm btn-ghost"
+              [disabled]="currentPage === totalPages"
+              (click)="onPageChange(totalPages)">
+              Last
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

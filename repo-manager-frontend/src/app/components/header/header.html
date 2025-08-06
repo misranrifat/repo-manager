@@ -1,0 +1,25 @@
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <div class="header-brand">
+        <svg class="logo" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="8" fill="var(--color-accent)"/>
+          <path d="M16 8C11.584 8 8 11.584 8 16C8 19.536 10.288 22.544 13.472 23.584C13.872 23.648 14.016 23.408 14.016 23.2C14.016 23.008 14.016 22.544 14.016 21.936C11.936 22.416 11.456 20.912 11.456 20.912C11.088 19.984 10.56 19.744 10.56 19.744C9.84 19.264 10.608 19.28 10.608 19.28C11.408 19.328 11.824 20.096 11.824 20.096C12.528 21.312 13.664 20.944 14.032 20.736C14.112 20.224 14.32 19.872 14.544 19.664C12.72 19.456 10.8 18.768 10.8 15.712C10.8 14.848 11.12 14.144 11.84 13.584C11.76 13.376 11.488 12.576 11.92 11.504C11.92 11.504 12.592 11.28 14 12.304C14.656 12.128 15.328 12.048 16 12.048C16.672 12.048 17.36 12.128 18 12.304C19.408 11.28 20.08 11.504 20.08 11.504C20.512 12.576 20.24 13.376 20.16 13.584C20.88 14.144 21.2 14.848 21.2 15.712C21.2 18.768 19.28 19.44 17.44 19.648C17.728 19.904 17.984 20.4 17.984 21.168C17.984 22.256 17.984 23.136 17.984 23.2C17.984 23.408 18.128 23.648 18.528 23.584C21.712 22.544 24 19.536 24 16C24 11.584 20.416 8 16 8Z" fill="white"/>
+        </svg>
+        <h1 class="header-title">Repository Manager</h1>
+      </div>
+      
+      <div class="header-status" *ngIf="authStatus$ | async as status">
+        <div class="status-indicator" [class.authenticated]="status.authenticated">
+          <span class="status-dot"></span>
+          <span class="status-text">
+            {{ status.authenticated ? 'Connected as ' + status.user : 'Not Connected' }}
+          </span>
+        </div>
+        <div class="status-message" *ngIf="!status.authenticated">
+          {{ status.message }}
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

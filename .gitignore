@@ -1,0 +1,55 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Backend (Java/Spring Boot)
+repo-manager-backend/build/
+repo-manager-backend/.gradle/
+repo-manager-backend/bin/
+repo-manager-backend/out/
+repo-manager-backend/*.log
+repo-manager-backend/*.jar
+repo-manager-backend/*.war
+repo-manager-backend/.classpath
+repo-manager-backend/.project
+repo-manager-backend/.settings/
+
+# Frontend (Angular)
+repo-manager-frontend/node_modules/
+repo-manager-frontend/dist/
+repo-manager-frontend/.angular/
+repo-manager-frontend/.sass-cache/
+repo-manager-frontend/npm-debug.log*
+repo-manager-frontend/yarn-debug.log*
+repo-manager-frontend/yarn-error.log*
+repo-manager-frontend/.ng_build/
+repo-manager-frontend/.ng_pkg_build/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Docker
+docker-compose.override.yml
+volumes/
+
+# Logs
+*.log
+logs/
+
+# Temp files
+*.tmp
+*.temp
+.cache/

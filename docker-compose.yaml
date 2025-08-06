@@ -1,0 +1,59 @@
+services:
+  backend:
+    build:
+      context: ./repo-manager-backend
+      dockerfile: Dockerfile
+    container_name: repo-manager-backend
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - SPRING_PROFILES_ACTIVE=production
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - repo-manager-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    build:
+      context: ./repo-manager-frontend
+      dockerfile: Dockerfile
+    container_name: repo-manager-frontend
+    restart: always
+    ports:
+      - "5777:5777"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5777/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - repo-manager-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  repo-manager-network:
+    driver: bridge
+
+volumes:
+  backend_logs:
+    driver: local
+  frontend_logs:
+    driver: local
