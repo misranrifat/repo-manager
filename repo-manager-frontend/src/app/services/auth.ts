@@ -18,9 +18,16 @@ interface CachedAuth {
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8081/api';
+  private apiUrl = this.getApiUrl();
   private authStatusSubject = new BehaviorSubject<AuthStatus | null>(null);
   public authStatus$ = this.authStatusSubject.asObservable();
+
+  private getApiUrl(): string {
+    // Use relative URL to work with any host
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    return `${protocol}//${hostname}:8081/api`;
+  }
   
   // Cache configuration
   private readonly CACHE_KEY = 'github_auth_cache';

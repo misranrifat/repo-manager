@@ -7,9 +7,16 @@ import { Repository, VisibilityFilter } from '../models/repository.model';
   providedIn: 'root'
 })
 export class GithubService {
-  private apiUrl = 'http://localhost:8081/api';
+  private apiUrl = this.getApiUrl();
 
   constructor(private http: HttpClient) {}
+
+  private getApiUrl(): string {
+    // Use relative URL to work with any host
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    return `${protocol}//${hostname}:8081/api`;
+  }
 
   getRepositories(visibility?: VisibilityFilter, search?: string): Observable<Repository[]> {
     let params = new HttpParams();
